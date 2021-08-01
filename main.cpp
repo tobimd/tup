@@ -14,28 +14,36 @@
 #include <fstream>     // -- fstream
 #include <cstdlib>     // -- atoi
 #include <regex>       // -- regex_replace
+#include <ctime>       // 
 
+enum Param { Dist, Oppn };
 
 // Generates a configuration for the complete problem
 // instance.
 struct Configuration {
 	int q1;
 	int q2;
+	int max_iter;
+
 	int teams;
 	int **dist;
 	int **oppn;
 
-	Configuration(int q1, int q2, int teams, int **dist, int **oppn) {
+	std::pair<std::size_t, std::size_t> distShape;
+	std::pair<std::size_t, std::size_t> oppnShape;
+
+	Configuration(int q1, int q2, int max_iter) {
 		Configuration::q1 = q1;
 		Configuration::q2 = q2;
-		Configuration::teams = teams;
-		Configuration::dist = dist;
-		Configuration::oppn = oppn;
+		Configuration::max_iter = max_iter;
 	}
 
 	~Configuration() {
-		for (int i = 0; i < teams; i++) {
+		for (std::size_t i = 0; i < distShape.first; i++) {
 			delete[] dist[i];
+		}
+
+		for (std::size_t i = 0; i < oppnShape.first; i++) {
 			delete[] oppn[i];
 		}
 
@@ -43,19 +51,64 @@ struct Configuration {
 		delete[] oppn;
 	}
 
-	int DistArraySize() {
-		return teams * teams;
+	void CreateArrays(int __teams) {
+		teams = __teams;
+
+		distShape = std::pair<std::size_t, std::size_t>(teams, teams);
+		oppnShape = std::pair<std::size_t, std::size_t>(2*teams-2, teams);
+
+		dist = new int*[distShape.first];
+		oppn = new int*[oppnShape.first];
+
+		for (std::size_t i = 0; i < distShape.first; i++) {
+			dist[i] = new int[distShape.second];
+		}
+
+		for (std::size_t i = 0; i < oppnShape.first; i++) {
+			oppn[i] = new int[oppnShape.second];
+		}
 	}
 
-	int OpponentsArraySize() {
-		return 2 * teams * teams - 2 * teams;
+	std::string ToString(Param param) {
+		if (param == Param::Dist) {
+			return ToString(dist, distShape);
+
+		} else {
+			return ToString(oppn, oppnShape);
+
+		}
+
 	}
 
+	std::string ToString(int **array, std::pair<size_t, size_t> shape) {
+		std::string string = "\n[";
+
+		for (std::size_t i = 0; i < shape.first; i++) {
+			if (i != 0) {
+				string += " ";
+			}
+
+			string += "[";
+
+			for (std::size_t j = 0; j < shape.second; j++) {
+				string += " " + std::to_string(array[i][j]);
+			}
+
+			string += " ]";
+
+			if (i + 1 != shape.first) {
+				string += "\n";
+			}
+		}
+		string += "]\n";
+
+		return string;
+	}
 };
 
 // Recieves user input and generates a configuration
 // for the current problem instance
-Configuration GetProblemParameters(char* argv[]) {
+void SetProblemParameters(char* input_file, Configuration *config) {
 
 	// Read instance data so that it can be stored in the
 	// Configuration struct `config`
@@ -64,7 +117,7 @@ Configuration GetProblemParameters(char* argv[]) {
 	{
 		std::string line;
 
-		std::fstream fs(argv[1], std::fstream::in);
+		std::fstream fs(input_file, std::fstream::in);
 
 		while (std::getline(fs, line)) {
 			file_contents += line;
@@ -74,7 +127,7 @@ Configuration GetProblemParameters(char* argv[]) {
 		fs.close();
 	}
 	int num_end_pos = 0;
-	for (int i = 0; i < file_contents.length(); i++) {
+	for (std::size_t i = 0; i < file_contents.length(); i++) {
 		if (file_contents[i] == ';') { 
 			num_end_pos = i;
 			break;
@@ -82,16 +135,7 @@ Configuration GetProblemParameters(char* argv[]) {
 	}
 
 	int teams = std::atoi(file_contents.substr(7, num_end_pos - 7).c_str());
-	int **dist = new int*[teams];
-	int **oppn = new int*[2*teams - 2];
-
-	for (int i = 0; i < teams; i++) {
-		dist[i] = new int[teams];
-	}
-
-	for (int i = 0; i < 2*teams - 2; i++) {
-		oppn[i] = new int[teams];
-	}
+	config->CreateArrays(teams);
 
 	const std::regex re_remove_only (
 		R"(nTeams=\d+;[\s\n]*\w+[\s\n]*=[\s\n]*\[[\s\n]*\[[\s\n]*)"
@@ -117,9 +161,9 @@ Configuration GetProblemParameters(char* argv[]) {
 	// Iterate through the newly edited string, first populating the distances
 	int row = 0;
 	int col = 0;
-	int k = 0;
+	std::size_t k = 0;
 
-	for (int i = 0; i < file_contents.length(); i++) {
+	for (std::size_t i = 0; i < file_contents.length(); i++) {
 		
 		// Stop if already checked all values needed
 		if (row == teams) {
@@ -129,7 +173,7 @@ Configuration GetProblemParameters(char* argv[]) {
 		
 		// Process number if space character is found
 		if (file_contents[i] == ' ') {
-			dist[row][col] = std::atoi(file_contents.substr(k, i - k).c_str());				
+			config->dist[row][col] = std::atoi(file_contents.substr(k, i - k).c_str());
 
 			col++;
 			k = i + 1;
@@ -142,13 +186,13 @@ Configuration GetProblemParameters(char* argv[]) {
 	}
 
 	// Get the rest of the values for opponents
-	for (int i = k; i < file_contents.length(); i++) {
+	for (std::size_t i = k; i < file_contents.length(); i++) {
 
 		// Process number if space character is found
 		if (file_contents[i] == ' ' || i == file_contents.length() - 1) {
 			if (i == file_contents.length() - 1) i++;
 
-			oppn[row][col] = std::atoi(file_contents.substr(k, i - k).c_str());
+			config->oppn[row][col] = std::atoi(file_contents.substr(k, i - k).c_str());
 
 			col++;
 			k = i + 1;
@@ -161,25 +205,53 @@ Configuration GetProblemParameters(char* argv[]) {
 		
 	}
 
-/* 	std::cout << "data: \"" << file_contents << "\"\n\nnTeams=" << teams << ";\n\ndist=\n";
-
-	for (int i = 0; i < teams; i++) {
-		for (int j = 0; j < teams; j++) {
-			std::cout << " " << dist[i][j];
-		}
-		std::cout << std::endl; 
-	}
-	std::cout << "\n\nopponents=\n";
-
-	for (int i = 0; i < 2 * teams - 2; i++) {
-		for (int j = 0; j < teams; j++) {
-			std::cout << " " << oppn[i][j];
-		}
-		std::cout << std::endl; 
-	}
- */
-	return Configuration(std::atoi(argv[2]), std::atoi(argv[3]), teams, dist, oppn);
 }
+
+void SimulatedAnnealingBestImprovement(Configuration *config) {
+	/**
+	while time limit and iteration limit not exceeded; do
+
+		S = initial solution with prob. p or incumbent solution with prob. (1 − p)
+		t = t0
+
+	    while t > TEMP_LIMIT do
+			for all ITER iterations do
+				Pick one feasible exchange E at random
+				d = impact of E in objective function
+
+				if d < 0; then
+					Execute E
+					if new solution better than incumbent; then
+						Update incumbent
+					end if
+
+				else
+					x = random number in [0, 1]
+					if x < exp(−d/t); then
+						Execute E
+					end if
+				end if
+			end for			
+
+			t = t ∗ ALPHA
+
+		end while
+	end while */
+
+
+	double temp_0 = 2000.0;
+	double TEMP_LIST = 500.0;
+	int N_ITER = config->max_iter;
+	double ALPHA = 0.95;
+	double p = 0.2;
+
+	int curr_iter = 0;
+
+	while (curr_iter < N_ITER) {
+		
+	}
+}
+
 
 int main(int argc, char* argv[]) {
 	(void) argc;
@@ -192,7 +264,15 @@ int main(int argc, char* argv[]) {
 	 * 		4. Generate output
 	 */
 	
-	Configuration config = GetProblemParameters(argv);
+	// Configuration object holding problem parameters
+	Configuration config = Configuration(
+		std::atoi(argv[2]), // q1
+		std::atoi(argv[3]), // q2
+		std::atoi(argv[4])  // K (a.k.a. max_iter)
+	);
+
+	SetProblemParameters(argv[1], &config);
+	SimulatedAnnealingBestImprovement(&config);
 
 	return 0;
 }
