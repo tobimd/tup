@@ -9,7 +9,11 @@
  * 
  */
 
-#include "solver.h"
+#include "../include/solver.h"
+
+#include <iostream>
+#include <fstream>
+#include <regex>
 
 // Recieves user input and generates a configuration
 // for the current problem instance

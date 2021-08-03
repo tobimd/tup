@@ -1,5 +1,7 @@
-#include "structs.h"
-#include "solver.h"
+#include "../include/structs.h"
+#include "../include/solver.h"
+
+#include <iostream>
 
 constexpr int penalty = 1000000;
 
@@ -11,6 +13,7 @@ void GreedyMatchingHeuristic(Configuration *config) {
 
 	// Costs of all possible matches per umpire
 	int assignment_costs[n_umps][n_umps];
+	bool has_violations[n_umps][n_umps];
 
 	int n_distance;
 	int n_visits;
@@ -30,6 +33,10 @@ void GreedyMatchingHeuristic(Configuration *config) {
 	for (std::size_t i = 0; i < n_umps; i++) {
 		umps[i] = Umpire(i, config->dist, config->teams);
 		umps[i].AddToPath(curr_matches[i]);
+
+		for (std::size_t j = 0; j < n_umps; j++) {
+			has_violations[i][j] = false;
+		}
 	}
 
 	while (time_slot < total_slots)	{
@@ -48,10 +55,12 @@ void GreedyMatchingHeuristic(Configuration *config) {
 				n_team_violation = curr_ump->TeamVisitViolations(config->q2);
 
 				assignment_costs[ump_index][match_index] = n_distance + penalty * (n_visits + n_home_violation + n_team_violation);
+				has_violations[ump_index][match_index] = n_home_violation + n_team_violation > 0;
 			}
 		}
 
-		std::cout << "\ncost contents (slot: " << time_slot << "):" << Array2D::ToString(&assignment_costs[0][0], n_umps, n_umps);
+		std::cout << "\ncost contents (slot: " << time_slot << "):" << Array2D::ToString<int>(&assignment_costs[0][0], n_umps, n_umps);
+		std::cout << "violations:" << Array2D::ToString<bool>(&has_violations[0][0], n_umps, n_umps);
 
 		time_slot++;
 	}

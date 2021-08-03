@@ -1,12 +1,7 @@
 #pragma once
 
-#include <iostream>    //
 #include <string>      //
-#include <fstream>     // -- fstream
 #include <cstdlib>     // -- atoi
-#include <regex>       // -- regex_replace
-#include <ctime>       // 
-#include <cmath>
 #include <vector>
 
 struct Array2D {
@@ -24,10 +19,35 @@ struct Array2D {
 	void Delete();
 
 	std::string ToString();
-	static std::string ToString(int *p_array, const std::size_t rows, const std::size_t cols);
-
 	int* operator[](const int index);
 	int* operator[](const size_t index);
+
+	template<class T>
+	static std::string ToString(T *p_array, const std::size_t rows, const std::size_t cols) {
+		std::string string = "\n[";
+
+		for (std::size_t i = 0; i < rows; i++) {
+			if (i != 0) {
+				string += " ";
+			}
+
+			string += "[";
+
+			for (std::size_t j = 0; j < cols; j++) {
+				string += " " + std::to_string(p_array[1*i + j]);
+			}
+
+			string += " ]";
+
+			if (i + 1 != rows) {
+				string += "\n";
+			}
+		}
+		string += "]\n";
+
+		return string;
+	}
+
 };
 
 // Generates a configuration for the complete problem
@@ -54,9 +74,25 @@ struct Match {
 	Match() = default;
 	Match(int home, int visit);
 
-	static void GetMatches(std::vector<Match> &matches, Configuration *config, const int time_slot);
-
 	std::string ToString();
+
+	static void GetMatches(std::vector<Match> &matches, Configuration *config, const int time_slot) {
+		matches.clear();
+
+		// Number of matches
+		int n_size = config->teams / 2;
+
+		// Iterate through opponents list, and create each match accordingly
+		for (int j = 0; j < n_size; j++) {
+
+			// If a positive value is found, then set `home` team as the current
+			// `j` index + 1, and `visit` team as the value being hold in that position (positive)
+			if (config->oppn[time_slot][j] > 0)	{
+				matches.emplace(matches.end(), Match(j+1, -config->oppn[time_slot][j]));
+			}
+		}
+	}
+
 };
 
 class Umpire {

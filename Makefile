@@ -21,7 +21,6 @@ $(OBJ_DIR)/%.o: src/%.cpp
 $(APP_DIR)/$(TARGET): $(OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -o $(APP_DIR)/$(TARGET) $^ $(LDFLAGS)
-	@rm $(TARGET)
 	@ln -s $(APP_DIR)/$(TARGET) $(TARGET)
 
 -include $(DEPENDENCIES)
@@ -37,6 +36,9 @@ debug: all
 
 release: CXXFLAGS += -O3
 release: all
+
+test: clean, debug
+	./TUP instances/umps4.txt 2 3 1000
 
 clean:
 	-@rm -rvf $(OBJ_DIR)/*
