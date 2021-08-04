@@ -37,8 +37,35 @@ debug: all
 release: CXXFLAGS += -O3
 release: all
 
-test: clean, debug
+test-4: clean debug
 	./TUP instances/umps4.txt 2 3 1000
+
+test-6: clean debug
+	./TUP instances/umps6.txt 2 3 1000
+
+test-8: clean debug
+	./TUP instances/umps8.txt 2 3 1000
+
+test-10: clean debug
+	./TUP instances/umps10.txt 2 3 1000
+
+test-12: clean debug
+	./TUP instances/umps12.txt 2 3 1000
+
+test-14: clean debug
+	./TUP instances/umps14.txt 2 3 1000
+
+test-16: clean debug
+	./TUP instances/umps16.txt 2 3 1000
+
+test-18: clean debug
+	./TUP instances/umps18.txt 2 3 1000
+
+test-20: clean debug
+	./TUP instances/umps20.txt 2 3 1000
+
+test-30: clean debug
+	./TUP instances/umps30.txt 2 3 1000
 
 clean:
 	-@rm -rvf $(OBJ_DIR)/*

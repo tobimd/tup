@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <string>      //
 #include <cstdlib>     // -- atoi
 #include <vector>
@@ -21,6 +22,32 @@ struct Array2D {
 	std::string ToString();
 	int* operator[](const int index);
 	int* operator[](const size_t index);
+
+	template<class T>
+	static std::string ToString(T **p_array, const std::size_t rows, const std::size_t cols) {
+		std::string string = "\n[";
+
+		for (std::size_t i = 0; i < rows; i++) {
+			if (i != 0) {
+				string += " ";
+			}
+
+			string += "[";
+
+			for (std::size_t j = 0; j < cols; j++) {
+				string += " " + std::to_string(p_array[i][j]);
+			}
+
+			string += " ]";
+
+			if (i + 1 != rows) {
+				string += "\n";
+			}
+		}
+		string += "]\n";
+
+		return string;
+	}
 
 	template<class T>
 	static std::string ToString(T *p_array, const std::size_t rows, const std::size_t cols) {
@@ -76,19 +103,12 @@ struct Match {
 
 	std::string ToString();
 
-	static void GetMatches(std::vector<Match> &matches, Configuration *config, const int time_slot) {
-		matches.clear();
-
-		// Number of matches
-		int n_size = config->teams / 2;
-
-		// Iterate through opponents list, and create each match accordingly
-		for (int j = 0; j < n_size; j++) {
-
-			// If a positive value is found, then set `home` team as the current
-			// `j` index + 1, and `visit` team as the value being hold in that position (positive)
-			if (config->oppn[time_slot][j] > 0)	{
-				matches.emplace(matches.end(), Match(j+1, -config->oppn[time_slot][j]));
+	static void GetMatches(std::vector<Match> &matches, int *oppn, const std::size_t size) {
+		int j = 0;
+		for (std::size_t i = 0; i < size; i++) {
+			if (oppn[i] > 0) {
+				matches[j] = Match(i+1, oppn[i]);
+				j++;
 			}
 		}
 	}
@@ -100,6 +120,7 @@ class Umpire {
 private:
 	int n_length_ = 0;
 	int n_size_;
+	int n_teams_;
 
 public:
 	int id;
@@ -122,7 +143,6 @@ public:
 	int CountVisitsOf(const int home_venue);
 	int HomeVisitViolations(const int home_venue, const int q1);
 	int TeamVisitViolations(const int q2);
-	bool HasVisited(const int home_venue);
 };
 
 struct Instance {

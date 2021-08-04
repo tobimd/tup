@@ -1,5 +1,6 @@
 #include "../include/structs.h"
 #include "../include/solver.h"
+#include "../include/utils.h"
 
 #include <iostream>
 
@@ -26,21 +27,17 @@ void GreedyMatchingHeuristic(Configuration *config) {
 	std::vector<Match> curr_matches;
 	curr_matches.reserve(n_umps);
 
-	Match::GetMatches(curr_matches, config, time_slot);
+	Match::GetMatches(curr_matches, config->oppn[0], n_teams);
 	time_slot++;
 
 	Umpire umps[n_umps];
 	for (std::size_t i = 0; i < n_umps; i++) {
-		umps[i] = Umpire(i, config->dist, config->teams);
+		umps[i] = Umpire(i, config->dist, n_teams);
 		umps[i].AddToPath(curr_matches[i]);
-
-		for (std::size_t j = 0; j < n_umps; j++) {
-			has_violations[i][j] = false;
-		}
 	}
 
 	while (time_slot < total_slots)	{
-		Match::GetMatches(curr_matches, config, time_slot);
+		Match::GetMatches(curr_matches, config->oppn[time_slot], n_teams);
 
 		// Calculate costs for each edge, for each umpire
 		for (std::size_t ump_index = 0; ump_index < n_umps; ump_index++) {
@@ -59,10 +56,15 @@ void GreedyMatchingHeuristic(Configuration *config) {
 			}
 		}
 
-		std::cout << "\ncost contents (slot: " << time_slot << "):" << Array2D::ToString<int>(&assignment_costs[0][0], n_umps, n_umps);
-		std::cout << "violations:" << Array2D::ToString<bool>(&has_violations[0][0], n_umps, n_umps);
+		for (std::size_t i = 0; i < n_umps; i++) {
+			umps[i].AddToPath(curr_matches[i]);
+		}
 
 		time_slot++;
+	}
+
+	for (std::size_t i = 0; i < n_umps; i++) {
+		umps[i].Delete();
 	}
 }
 

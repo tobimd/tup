@@ -115,7 +115,8 @@ std::string Match::ToString() {
 	return "<Match: home=" + std::to_string(home) + ", visit=" + std::to_string(visit) + ">";
 }
 
-Umpire::Umpire(const int id, Array2D dist, const int n_teams) : n_size_(n_teams), id(id), dist(dist) { 
+Umpire::Umpire(const int id, Array2D dist, const int n_teams) : n_teams_(n_teams), id(id), dist(dist) { 
+	n_size_ = 2 * n_teams - 2;
 	p_path = new Match[n_size_];
 }
 
@@ -123,7 +124,7 @@ void Umpire::Delete() {
 	delete[] p_path;
 }
 
-void Umpire::AddToPath(const Match match) {
+void Umpire::AddToPath(Match match) {
 	p_path[n_length_] = match;
 
 	++n_length_;
@@ -136,7 +137,7 @@ void Umpire::Backtrack() {
 }
 
 int Umpire::DistanceTo(const int home_venue) {
-	return dist[p_path[n_length_ - 1].home][home_venue];
+	return dist[p_path[n_length_ - 1].home - 1][home_venue - 1];
 }
 
 int Umpire::CountVisitsOf(const int home_venue) {
@@ -154,7 +155,7 @@ int Umpire::HomeVisitViolations(const int home_venue, const int q1) {
 	int count = 0;
 	int start = n_length_ - 1;
 
-	for (int i = start; i > start - q1; i--)
+	for (int i = start; i > start - q1 && i >= 0; i--)
 		if (p_path[i].home == home_venue) count++;
 
 	return count;
@@ -162,29 +163,19 @@ int Umpire::HomeVisitViolations(const int home_venue, const int q1) {
 
 int Umpire::TeamVisitViolations(const int q2) {
 	int count = 0;
-	int team_visits[n_size_];
+	int team_visits[n_teams_];
 	int start = n_length_ - 1;
 
-	for (int i = 0; i < n_size_; i++)
+	for (int i = 0; i < n_teams_; i++)
 		team_visits[i] = 0;
 
-	for (int i = start; i > start - q2; i--){ 
-		team_visits[p_path[i].home]++;
-		team_visits[p_path[i].visit]++;
+	for (int i = start; i > start - q2 && i >= 0; i--){ 
+		team_visits[p_path[i].home - 1]++;
+		team_visits[p_path[i].visit - 1]++;
 	}
 
-	for (int i = 0; i < n_size_; i++)
-		if (team_visits[i] > 0) count++;
+	for (int i = 0; i < n_teams_; i++)
+		if (team_visits[i] > 1) count++;
 
 	return count;
-}
-
-bool Umpire::HasVisited(const int home_venue) {
-	for (int i = 0; i < n_length_; i++) {
-		if (p_path[i].home == home_venue) {
-			return true;
-		}
-	}
-
-	return false;
 }
