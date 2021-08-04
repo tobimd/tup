@@ -42,64 +42,64 @@ release: CXXFLAGS += -O3
 release: all
 
 test-4: clean debug
-	time ./TUP instances/umps4.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps4.txt $(Q1) $(Q2) $(K)
 
 test-6: clean debug
-	time ./TUP instances/umps6.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps6.txt $(Q1) $(Q2) $(K)
 
 test-8: clean debug
-	time ./TUP instances/umps8.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps8.txt $(Q1) $(Q2) $(K)
 
 test-10: clean debug
-	time ./TUP instances/umps10.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps10.txt $(Q1) $(Q2) $(K)
 
 test-12: clean debug
-	time ./TUP instances/umps12.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps12.txt $(Q1) $(Q2) $(K)
 
 test-14: clean debug
-	time ./TUP instances/umps14.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps14.txt $(Q1) $(Q2) $(K)
 
 test-16: clean debug
-	time ./TUP instances/umps16.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps16.txt $(Q1) $(Q2) $(K)
 
 test-18: clean debug
-	time ./TUP instances/umps18.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps18.txt $(Q1) $(Q2) $(K)
 
 test-20: clean debug
-	time ./TUP instances/umps20.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps20.txt $(Q1) $(Q2) $(K)
 
 test-30: clean debug
-	time ./TUP instances/umps30.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps30.txt $(Q1) $(Q2) $(K)
 
 run-4:
-	time ./TUP instances/umps4.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps4.txt $(Q1) $(Q2) $(K)
 
 run-6:
-	time ./TUP instances/umps6.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps6.txt $(Q1) $(Q2) $(K)
 
 run-8:
-	time ./TUP instances/umps8.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps8.txt $(Q1) $(Q2) $(K)
 
 run-10:
-	time ./TUP instances/umps10.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps10.txt $(Q1) $(Q2) $(K)
 
 run-12:
-	time ./TUP instances/umps12.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps12.txt $(Q1) $(Q2) $(K)
 
 run-14:
-	time ./TUP instances/umps14.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps14.txt $(Q1) $(Q2) $(K)
 
 run-16:
-	time ./TUP instances/umps16.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps16.txt $(Q1) $(Q2) $(K)
 
 run-18:
-	time ./TUP instances/umps18.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps18.txt $(Q1) $(Q2) $(K)
 
 run-20:
-	time ./TUP instances/umps20.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps20.txt $(Q1) $(Q2) $(K)
 
 run-30:
-	time ./TUP instances/umps30.txt $(Q1) $(Q2) $(K)
+	/usr/bin/time -p ./TUP instances/umps30.txt $(Q1) $(Q2) $(K)
 
 clean:
 	-@rm -rvf $(OBJ_DIR)/*

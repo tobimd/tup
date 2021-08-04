@@ -56,7 +56,7 @@ void Array2D::Delete() {
 }
 
 std::string Array2D::ToString() {
-	std::string string = "\n[";
+	std::string string = "[";
 
 	for (std::size_t i = 0; i < rows; i++) {
 		if (i != 0) {
@@ -75,7 +75,7 @@ std::string Array2D::ToString() {
 			string += "\n";
 		}
 	}
-	string += "]\n";
+	string += "]";
 
 	return string;
 }

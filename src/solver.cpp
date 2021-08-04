@@ -10,8 +10,10 @@ constexpr int penalty = 1000000;
 
 void SolveBipartiteGraph(int *costs, int *fbo, int *sbo, const std::size_t n_umps) {
 	int best_cost = 0;
-	int second_best_cost = 999999999;
 	int curr_cost = 0;
+
+	int second_best_cost = 999999999;
+	bool sbc_was_set = false;
 
 	// Indices of vector correspond to each umpire's id, and contains the index
 	// of the selected match
@@ -28,8 +30,6 @@ void SolveBipartiteGraph(int *costs, int *fbo, int *sbo, const std::size_t n_ump
 		best_cost += costs[i*n_umps + i];
 	}
 
-	std::string output = "    <SolveBipartiteGraph>: best_cost -> [ (0)=" + std::to_string(best_cost);
-	int count = 0;
     std::next_permutation(edges, edges + n_umps);
 
 	// While permutations still exists, loop to find the best two minimal costs
@@ -42,12 +42,11 @@ void SolveBipartiteGraph(int *costs, int *fbo, int *sbo, const std::size_t n_ump
 			curr_cost += costs[i*n_umps + edges[i]];
 		}
 
-		std::cout << "    <SolveBipartiteGraph>: check if curr_cost=" << curr_cost << " is LESS THAN best_cost=" << best_cost << " -> " << ((curr_cost < best_cost) ? "yes" : "no") << "\n" << std::flush;
 
 		if (curr_cost < best_cost) {
-			output += ", (" + std::to_string(++count) + ")=" + std::to_string(curr_cost);
+
 			for (std::size_t i = 0; i < n_umps; i++) {
-				if (best_cost < second_best_cost)
+				if (best_cost < second_best_cost || !sbc_was_set)
 					sbo[i] = fbo[i];
 
 				fbo[i] = edges[i];
@@ -55,21 +54,16 @@ void SolveBipartiteGraph(int *costs, int *fbo, int *sbo, const std::size_t n_ump
 
 			second_best_cost = best_cost;
 			best_cost = curr_cost;
-		} else if (curr_cost < second_best_cost) {
-			std::cout << "        * <SolveBipartiteGraph>: check if curr_cost=" << curr_cost << " is LESS THAN second_best_cost=" << second_best_cost << " -> yes\n" << std::flush;
+			sbc_was_set = true;
+		} else if (curr_cost < second_best_cost || !sbc_was_set) {
 
 			for (std::size_t i = 0; i < n_umps; i++) {
 				sbo[i] = edges[i];
 			}
 			second_best_cost = curr_cost;
-			
-		} else {
-
-			std::cout << "        * <SolveBipartiteGraph>: check if curr_cost=" << curr_cost << " is LESS THAN second_best_cost=" << second_best_cost << " -> no\n" << std::flush;
-		}
+			sbc_was_set = true;
+		} 
 	} while (std::next_permutation(edges, edges + n_umps));
-		
-	std::cout << output << " ]\n" << std::flush;
 }
 
 void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
@@ -155,17 +149,6 @@ void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
 			}
 		}
 
-		std::cout << "\n\n ** for time_slot=" << time_slot << ", matches=[ " << curr_matches[0].ToString();
-
-		for (std::size_t i = 1; i < n_umps; i++) {
-			std::cout << ", " << curr_matches[i].ToString();
-		}
-		
-		std::cout << " ]\n";
-		
-		if (! skip_calculations)
-			std::cout << "assignment_costs=" << Array2D::ToString(&assignment_costs[0][0], n_umps, n_umps);
-
 		// Before solving the bipartite graph, check if there is
 		// no feasible solution for any umpire, and backtrack
 		if (time_slot > 1 && !has_backtracked[time_slot] && !skip_calculations) {
@@ -179,7 +162,6 @@ void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
 				}
 
 				if (is_unfeasible) {
-					std::cout << "    [ ! ] all possible edges get unfeasible solution, backtracking...\n" << std::flush;
 					for (std::size_t k = 0; k < n_umps; k++) {
 						umps[k].Backtrack();
 					}
@@ -193,6 +175,7 @@ void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
 				time_slot--;
 				skip_calculations = true;
 				std::copy(prev_sbo, prev_sbo + n_umps, first_best_option);
+				std::cout << "\n        <---- backtracking (pre perfect matching) <----\n" << std::flush;
 				continue;
 			}
 		}
@@ -212,7 +195,6 @@ void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
 		if (time_slot > 1 && !has_backtracked[time_slot] && !skip_calculations) {
 			for (std::size_t i = 0; i < n_umps; i++) {
 				if (has_violations[i][first_best_option[i]]) {
-					std::cout << "    [ ! ] current best perfect matching has violations, backtracking...\n" << std::flush;
 					for (std::size_t k = 0; k < n_umps; k++) {
 						umps[k].Backtrack();
 					}
@@ -226,16 +208,17 @@ void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
 				time_slot--;
 				skip_calculations = true;
 				std::copy(prev_sbo, prev_sbo + n_umps, first_best_option);
+				std::cout << "\n        <---- backtracking (post perfect matching)<----\n" << std::flush;
 				continue;
 			}
 		}
 
-		std::cout << "adding best matches to each umpire..." << Array2D::ToString(&first_best_option[0], 1, n_umps)<< "which corresponds to:\n";
+		std::cout << "\n\n[time_slot=" << time_slot << "], adding matches=" << Array2D::ToString(&first_best_option[0], 1, n_umps)<< "\nwhich is the same as:\n";
 
 		// Now that backtracking and costs have been settled, 
 		// add new matches as the path for each umpire
 		for (std::size_t i = 0; i < n_umps; i++) {
-			std::cout << "    (time_slot=" << time_slot << ") ump[" << i << "] works on match: " << curr_matches[first_best_option[i]].ToString() << "\n" << std::flush;
+			std::cout << "    ump[" << i << "] has match: " << curr_matches[first_best_option[i]].ToString() << "\n" << std::flush;
 			umps[i].AddToPath(curr_matches[first_best_option[i]]);
 		}
 		
@@ -244,9 +227,12 @@ void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
 		time_slot++;
 	}
 
+	std::cout << "\n----------------------------\n-- Showing final results: --\n\n" << std::flush;
 	for (std::size_t i = 0; i < n_umps; i++) {
-		std::cout << "\numpire " << i << ":\n    " << umps[i].ToString() << std::flush;
+		std::cout << "   * " << umps[i].ToString() << "\n" << std::flush;
 	}
+
+	std::cout << "----------------------------\n\n" << std::flush;
 }
 
 void LocalSearch() {

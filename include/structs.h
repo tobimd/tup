@@ -25,7 +25,7 @@ struct Array2D {
 
 	template<class T>
 	static std::string ToString(T **p_array, const std::size_t rows, const std::size_t cols) {
-		std::string string = "\n[";
+		std::string string = "[";
 
 		for (std::size_t i = 0; i < rows; i++) {
 			if (i != 0) {
@@ -44,14 +44,14 @@ struct Array2D {
 				string += "\n";
 			}
 		}
-		string += "]\n";
+		string += "]";
 
 		return string;
 	}
 
 	template<class T>
 	static std::string ToString(T *p_array, const std::size_t rows, const std::size_t cols) {
-		std::string string = "\n[";
+		std::string string = "[";
 
 		for (std::size_t i = 0; i < rows; i++) {
 			if (i != 0) {
@@ -70,7 +70,7 @@ struct Array2D {
 				string += "\n";
 			}
 		}
-		string += "]\n";
+		string += "]";
 
 		return string;
 	}
