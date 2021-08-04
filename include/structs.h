@@ -61,7 +61,7 @@ struct Array2D {
 			string += "[";
 
 			for (std::size_t j = 0; j < cols; j++) {
-				string += " " + std::to_string(p_array[1*i + j]);
+				string += " " + std::to_string(p_array[i*cols + j]);
 			}
 
 			string += " ]";
@@ -89,7 +89,10 @@ struct Configuration {
 	Array2D oppn;
 
 	Configuration(const int q1, const int q2, const int max_iter);
-	~Configuration();
+	~Configuration() {
+		dist.Delete();
+		oppn.Delete();
+	}
 
 	void CreateArrays(const int __teams);
 };
@@ -100,6 +103,8 @@ struct Match {
 
 	Match() = default;
 	Match(int home, int visit);
+
+	bool operator< (const Match &other);
 
 	std::string ToString();
 
@@ -129,9 +134,6 @@ public:
 
 	Array2D dist;
 
-	// Locked home venue index, due to backtracking
-	int locked;
-
 	Umpire() = default;
 	Umpire(const int id, Array2D dist, const int n_teams);
 
@@ -143,6 +145,7 @@ public:
 	int CountVisitsOf(const int home_venue);
 	int HomeVisitViolations(const int home_venue, const int q1);
 	int TeamVisitViolations(const int q2);
+	std::string ToString();
 };
 
 struct Instance {

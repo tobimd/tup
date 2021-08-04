@@ -67,6 +67,8 @@ void SetConfiguration(const char* input_file, Configuration *config) {
 	);
 	file_contents.pop_back();
 
+	std::cout << "file_contents: \"" << file_contents << "\"\n" << std::flush;
+
 	// Iterate through the newly edited string, first populating the distances
 	int row = 0;
 	int col = 0;
@@ -93,6 +95,7 @@ void SetConfiguration(const char* input_file, Configuration *config) {
 			}
 		}
 	}
+	std::cout << "dist: " << config->dist.ToString() << "\n" << std::flush;
 
 	// Get the rest of the values for opponents
 	for (std::size_t i = k; i < file_contents.length(); i++) {
@@ -114,6 +117,7 @@ void SetConfiguration(const char* input_file, Configuration *config) {
 		
 	}
 
+	std::cout << "oppn: " << config->oppn.ToString() << "\n" << std::flush;
 
 }
 
@@ -146,7 +150,21 @@ int main(int argc, char* argv[]) {
 	);
 
 	SetConfiguration(argv[1], &config);
-	GreedyMatchingHeuristic(&config);
+
+	std::size_t n_teams = config.teams;
+	std::size_t n_umps = n_teams / 2;
+
+	Umpire umps[n_umps];
+	for (std::size_t i = 0; i < n_umps; i++)
+		umps[i] = Umpire(i, config.dist, config.teams);
+
+	GreedyMatchingHeuristic(&config, &umps[0]);
+
+
+
+
+	for (std::size_t i = 0; i < n_umps; i++)
+		umps[i].Delete();
 
 	return 0;
 }

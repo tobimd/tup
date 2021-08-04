@@ -97,11 +97,6 @@ Configuration::Configuration(const int q1, const int q2, const int max_iter) {
 	Configuration::max_iter = max_iter;
 }
 
-Configuration::~Configuration() {
-	dist.Delete();
-	oppn.Delete();
-}
-
 void Configuration::CreateArrays(const int __teams) {
 	teams = __teams;
 
@@ -110,6 +105,11 @@ void Configuration::CreateArrays(const int __teams) {
 }
 
 Match::Match(int home, int visit) : home(home), visit(visit) {}
+
+bool Match::operator< (const Match &other) {
+	std::cout << "\n\nCALLED OPERATOR < \n\n" << std::flush;
+	return home < other.home;
+}
 
 std::string Match::ToString() {
 	return "<Match: home=" + std::to_string(home) + ", visit=" + std::to_string(visit) + ">";
@@ -121,6 +121,7 @@ Umpire::Umpire(const int id, Array2D dist, const int n_teams) : n_teams_(n_teams
 }
 
 void Umpire::Delete() {
+	dist.Delete();
 	delete[] p_path;
 }
 
@@ -128,12 +129,10 @@ void Umpire::AddToPath(Match match) {
 	p_path[n_length_] = match;
 
 	++n_length_;
-	locked = -1;
 }
 
 void Umpire::Backtrack() {
 	--n_length_;
-	locked = p_path[n_length_].home;
 }
 
 int Umpire::DistanceTo(const int home_venue) {
@@ -178,4 +177,18 @@ int Umpire::TeamVisitViolations(const int q2) {
 		if (team_visits[i] > 1) count++;
 
 	return count;
+}
+
+std::string Umpire::ToString() {
+	std::string output = "<Umpire: id=" + std::to_string(id) + ", path[" + std::to_string(n_length_) + "]=[";
+
+	if (n_length_ > 0) {
+		output += p_path[0].ToString();
+		
+		for (int i = 1; i < n_length_; i++)
+			output += ", " + p_path[i].ToString();
+	}
+
+	output += "] >\n";
+	return output;
 }

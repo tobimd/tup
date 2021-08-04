@@ -12,6 +12,10 @@ OBJECTS  := $(SRC:src/%.cpp=$(OBJ_DIR)/%.o)
 DEPENDENCIES \
          := $(OBJECTS:.o=.d)
 
+Q1       := 2
+Q2       := 3
+K        := 10000
+
 all: build $(APP_DIR)/$(TARGET)
 
 $(OBJ_DIR)/%.o: src/%.cpp
@@ -38,34 +42,64 @@ release: CXXFLAGS += -O3
 release: all
 
 test-4: clean debug
-	./TUP instances/umps4.txt 2 3 1000
+	./TUP instances/umps4.txt $(Q1) $(Q2) $(K)
 
 test-6: clean debug
-	./TUP instances/umps6.txt 2 3 1000
+	./TUP instances/umps6.txt $(Q1) $(Q2) $(K)
 
 test-8: clean debug
-	./TUP instances/umps8.txt 2 3 1000
+	./TUP instances/umps8.txt $(Q1) $(Q2) $(K)
 
 test-10: clean debug
-	./TUP instances/umps10.txt 2 3 1000
+	./TUP instances/umps10.txt $(Q1) $(Q2) $(K)
 
 test-12: clean debug
-	./TUP instances/umps12.txt 2 3 1000
+	./TUP instances/umps12.txt $(Q1) $(Q2) $(K)
 
 test-14: clean debug
-	./TUP instances/umps14.txt 2 3 1000
+	./TUP instances/umps14.txt $(Q1) $(Q2) $(K)
 
 test-16: clean debug
-	./TUP instances/umps16.txt 2 3 1000
+	./TUP instances/umps16.txt $(Q1) $(Q2) $(K)
 
 test-18: clean debug
-	./TUP instances/umps18.txt 2 3 1000
+	./TUP instances/umps18.txt $(Q1) $(Q2) $(K)
 
 test-20: clean debug
-	./TUP instances/umps20.txt 2 3 1000
+	./TUP instances/umps20.txt $(Q1) $(Q2) $(K)
 
 test-30: clean debug
-	./TUP instances/umps30.txt 2 3 1000
+	./TUP instances/umps30.txt $(Q1) $(Q2) $(K)
+
+run-4:
+	./TUP instances/umps4.txt $(Q1) $(Q2) $(K)
+
+run-6:
+	./TUP instances/umps6.txt $(Q1) $(Q2) $(K)
+
+run-8:
+	./TUP instances/umps8.txt $(Q1) $(Q2) $(K)
+
+run-10:
+	./TUP instances/umps10.txt $(Q1) $(Q2) $(K)
+
+run-12:
+	./TUP instances/umps12.txt $(Q1) $(Q2) $(K)
+
+run-14:
+	./TUP instances/umps14.txt $(Q1) $(Q2) $(K)
+
+run-16:
+	./TUP instances/umps16.txt $(Q1) $(Q2) $(K)
+
+run-18:
+	./TUP instances/umps18.txt $(Q1) $(Q2) $(K)
+
+run-20:
+	./TUP instances/umps20.txt $(Q1) $(Q2) $(K)
+
+run-30:
+	./TUP instances/umps30.txt $(Q1) $(Q2) $(K)
 
 clean:
 	-@rm -rvf $(OBJ_DIR)/*
