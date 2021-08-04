@@ -47,7 +47,7 @@ void SetConfiguration(const char* input_file, Configuration *config) {
 	config->CreateArrays(teams);
 
 	const std::regex re_remove_only (
-		R"(nTeams=\d+;[\s\n]*\w+[\s\n]*=[\s\n]*\[[\s\n]*\[[\s\n]*)"
+		R"(\s*nTeams\s*=\s*\d+;[\s\n]*\w+[\s\n]*=[\s\n]*\[[\s\n]*\[[\s\n]*)"
 	);
 	const std::regex re_one_space (
 		R"(\][\s\n]*\[[\s\n]*|[\s\n]*\][\s\n]*\];[\s\n]*(\w+[\s\n]*=[\s\n]*\[[\s\n]*\[[\s\n]*)?|\s\s+)"
@@ -66,8 +66,6 @@ void SetConfiguration(const char* input_file, Configuration *config) {
 		std::regex_constants::match_any
 	);
 	file_contents.pop_back();
-
-	std::cout << "file_contents: \"" << file_contents << "\"\n" << std::flush;
 
 	// Iterate through the newly edited string, first populating the distances
 	int row = 0;
@@ -95,7 +93,6 @@ void SetConfiguration(const char* input_file, Configuration *config) {
 			}
 		}
 	}
-	std::cout << "dist: " << config->dist.ToString() << "\n" << std::flush;
 
 	// Get the rest of the values for opponents
 	for (std::size_t i = k; i < file_contents.length(); i++) {
@@ -116,8 +113,6 @@ void SetConfiguration(const char* input_file, Configuration *config) {
 		}
 		
 	}
-
-	std::cout << "oppn: " << config->oppn.ToString() << "\n" << std::flush;
 
 }
 
