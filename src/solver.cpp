@@ -226,12 +226,12 @@ void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
 		time_slot++;
 	}
 
-	std::cout << "\n----------------------------\n-- Showing final results: --\n\n" << std::flush;
+	std::cout << "\n-----------------------------\n-- Showing greedy results: --\n\n" << std::flush;
 	for (std::size_t i = 0; i < n_umps; i++) {
 		std::cout << "   * " << umps[i].ToString() << "\n" << std::flush;
 	}
 
-	std::cout << "----------------------------\n\n" << std::flush;
+	std::cout << "-----------------------------\n\n" << std::flush;
 }
 
 void LocalSearch(Configuration *config) {
