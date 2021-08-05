@@ -41,7 +41,6 @@ void SolveBipartiteGraph(int *costs, int *fbo, int *sbo, const std::size_t n_ump
 			curr_cost += costs[i*n_umps + edges[i]];
 		}
 
-
 		if (curr_cost < best_cost) {
 
 			for (std::size_t i = 0; i < n_umps; i++) {
@@ -174,7 +173,6 @@ void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
 				time_slot--;
 				skip_calculations = true;
 				std::copy(prev_sbo, prev_sbo + n_umps, first_best_option);
-				std::cout << "\n        <---- backtracking (pre perfect matching) <----\n" << std::flush;
 				continue;
 			}
 		}
@@ -207,17 +205,13 @@ void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
 				time_slot--;
 				skip_calculations = true;
 				std::copy(prev_sbo, prev_sbo + n_umps, first_best_option);
-				std::cout << "\n        <---- backtracking (post perfect matching)<----\n" << std::flush;
 				continue;
 			}
 		}
 
-		std::cout << "\n\n[time_slot=" << time_slot << "], adding matches=" << Array2D::ToString(&first_best_option[0], 1, n_umps)<< "\nwhich is the same as:\n";
-
 		// Now that backtracking and costs have been settled, 
 		// add new matches as the path for each umpire
 		for (std::size_t i = 0; i < n_umps; i++) {
-			std::cout << "    ump[" << i << "] has match: " << curr_matches[first_best_option[i]].ToString() << "\n" << std::flush;
 			umps[i].AddToPath(curr_matches[first_best_option[i]]);
 		}
 		
@@ -225,13 +219,6 @@ void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
 		skip_calculations = false;
 		time_slot++;
 	}
-
-	std::cout << "\n-----------------------------\n-- Showing greedy results: --\n\n" << std::flush;
-	for (std::size_t i = 0; i < n_umps; i++) {
-		std::cout << "   * " << umps[i].ToString() << "\n" << std::flush;
-	}
-
-	std::cout << "-----------------------------\n\n" << std::flush;
 }
 
 void LocalSearch(Configuration *config) {
