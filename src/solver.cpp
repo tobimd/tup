@@ -1,6 +1,5 @@
 #include "../include/structs.h"
 #include "../include/solver.h"
-#include "../include/utils.h"
 
 #include <iostream>
 #include <algorithm>
@@ -235,7 +234,7 @@ void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
 	std::cout << "----------------------------\n\n" << std::flush;
 }
 
-void LocalSearch() {
+void LocalSearch(Configuration *config) {
 
 }
 

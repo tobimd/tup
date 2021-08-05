@@ -6,9 +6,11 @@ OBJ_DIR  := $(BUILD)/objects
 APP_DIR  := $(BUILD)/apps
 TARGET   := TUP
 INCLUDE  := -Iinclude/
-SRC      := $(wildcard src/*.cpp)
+SRC      :=                                  \
+	$(subst src/,, $(wildcard src/**/*.cpp)) \
+	$(subst src/,, $(wildcard src/*.cpp))    \
 
-OBJECTS  := $(SRC:src/%.cpp=$(OBJ_DIR)/%.o)
+OBJECTS  := $(SRC:%.cpp=$(OBJ_DIR)/%.o)
 DEPENDENCIES \
          := $(OBJECTS:.o=.d)
 
@@ -19,8 +21,8 @@ K        := 10000
 all: build $(APP_DIR)/$(TARGET)
 
 $(OBJ_DIR)/%.o: src/%.cpp
-	@mkdir -p $(OBJ_DIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $< -MMD -o $(OBJ_DIR)/$(basename $(notdir $@)).o
+	@mkdir -p $(@D)
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $< -MMD -o $@
 
 $(APP_DIR)/$(TARGET): $(OBJECTS)
 	@mkdir -p $(@D)

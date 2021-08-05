@@ -104,8 +104,6 @@ struct Match {
 	Match() = default;
 	Match(int home, int visit);
 
-	bool operator< (const Match &other);
-
 	std::string ToString();
 
 	static void GetMatches(std::vector<Match> &matches, int *oppn, const std::size_t size) {
@@ -146,6 +144,7 @@ public:
 	int HomeVisitViolations(const int home_venue, const int q1);
 	int TeamVisitViolations(const int q2);
 	std::string ToString();
+	void ExchangeMatch(const Umpire &other, const std::size_t time_slot);
 };
 
 struct Instance {
