@@ -143,6 +143,7 @@ public:
 	int CountVisitsOf(const int home_venue);
 	int HomeVisitViolations(const int home_venue, const int q1);
 	int TeamVisitViolations(const int q2);
+	bool HasViolations();
 	std::string ToString();
 	void ExchangeMatch(const Umpire &other, const std::size_t time_slot);
 };

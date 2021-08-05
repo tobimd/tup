@@ -64,6 +64,10 @@ int Umpire::TeamVisitViolations(const int q2) {
 	return count;
 }
 
+bool Umpire::HasViolations() {
+	
+}
+
 std::string Umpire::ToString() {
 	std::string output = "<Umpire: id=" + std::to_string(id) + ", path[" + std::to_string(n_length_) + "]=[";
 

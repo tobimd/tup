@@ -15,6 +15,11 @@
 #include <fstream>
 #include <regex>
 
+#define TEMP_LIMIT 500.0
+#define INITAL_TEMP 2000
+#define ITER 2500
+#define ALPHA 0.95
+
 // Recieves user input and generates a configuration
 // for the current problem instance
 void SetConfiguration(const char* input_file, Configuration *config) {
@@ -149,13 +154,31 @@ int main(int argc, char* argv[]) {
 	std::size_t n_teams = config.teams;
 	std::size_t n_umps = n_teams / 2;
 
+	// Initialize umpires
+
 	Umpire umps[n_umps];
 	for (std::size_t i = 0; i < n_umps; i++)
 		umps[i] = Umpire(i, config.dist, config.teams);
 
-	GreedyMatchingHeuristic(&config, &umps[0]);
+
+/* 	int curr_iter = config.max_iter;
+	double temp = 2000;
+	while (curr_iter > 0) {
+		GreedyMatchingHeuristic(&config, &umps[0]);
+		temp = INITAL_TEMP;
+
+		while(temp > TEMP_LIMIT) {
+			for (int i = 0; i < ITER; i++) {
 
 
+
+
+			}
+			
+		}
+
+
+	} */
 
 
 	for (std::size_t i = 0; i < n_umps; i++)
