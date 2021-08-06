@@ -14,11 +14,15 @@
 #include <iostream>
 #include <fstream>
 #include <regex>
+#include <cmath>
+#include <climits>
 
 #define TEMP_LIMIT 500.0
-#define INITAL_TEMP 2000
+#define INITAL_TEMP 2000.0
 #define ITER 2500
 #define ALPHA 0.95
+#define PROB 0.2
+
 
 // Recieves user input and generates a configuration
 // for the current problem instance
@@ -157,29 +161,115 @@ int main(int argc, char* argv[]) {
 	// Initialize umpires
 
 	Umpire umps[n_umps];
-	for (std::size_t i = 0; i < n_umps; i++)
+
+	std::vector<Match> init_solution[n_umps];
+	std::vector<Match> best_solution[n_umps];
+	std::vector<Match> curr_solution[n_umps];
+
+	for (std::size_t i = 0; i < n_umps; i++) {
 		umps[i] = Umpire(i, config.dist, config.teams);
 
+		best_solution[i].reserve(2 * n_teams - 2);
+		curr_solution[i].reserve(2 * n_teams - 2);
+		init_solution[i].reserve(2 * n_teams - 2);
+	}
 
-/* 	int curr_iter = config.max_iter;
-	double temp = 2000;
-	while (curr_iter > 0) {
-		GreedyMatchingHeuristic(&config, &umps[0]);
+	GreedyMatchingHeuristic(&config, &umps[0]);
+	for (std::size_t i = 0; i < n_umps; i++) {
+		init_solution[i] = umps[i].GetPath();
+		best_solution[i] = umps[i].GetPath();
+	}
+
+	int global_best_total_dist = INT_MAX;
+	int local_best_total_dist = INT_MAX;
+	int curr_total_dist = INT_MAX;
+
+	double temp = INITAL_TEMP;
+	int curr_iter = config.max_iter;
+
+	bool using_random = true;
+
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<double> uni_dbl_dist(0.0, 1.0);
+
+	while (curr_iter-- > 0) {
 		temp = INITAL_TEMP;
 
-		while(temp > TEMP_LIMIT) {
-			for (int i = 0; i < ITER; i++) {
-
-
-
-
-			}
-			
+		for (std::size_t i = 0; i < n_umps; i++) {
+			if (uni_dbl_dist(gen) <= 0.2)
+				umps[i].SetMatches(&init_solution[i]);
+			else
+				umps[i].SetMatches(&best_solution[i]);
 		}
 
+		std::cout << "( 1 )  after setting up umps\n" << std::flush;
 
-	} */
+		while(temp > TEMP_LIMIT) {
+			using_random = temp > 0.5 * TEMP_LIMIT;
 
+			for (int i = 0; i < ITER; i++) {
+
+				// Update the current total distance
+				local_best_total_dist = 0;
+				for (std::size_t j = 0; j < n_umps; j++)
+					local_best_total_dist += umps[j].TotalDistance();
+
+				std::cout << "( 2 )  after local_best_total_dist=" << local_best_total_dist << "\n" << std::flush;
+
+				auto [ u1_index, u2_index, time_slot ] = Umpire::PickExchange(&umps[0], n_umps, using_random, config.q1, config.q2);
+				std::cout << "( 3 )  after PickExchange\n" << std::flush;
+				
+				// Get difference and compare
+				curr_total_dist = 0;
+				for (std::size_t j = 0; j < n_umps; j++) {
+
+					if (u1_index == (int)j) {
+						curr_total_dist += umps[j].TotalDistanceWithExchange(umps[u2_index], time_slot);
+						curr_solution[j] = umps[u1_index].GetPathWithExchange(umps[u2_index], time_slot);
+					
+					} else if (u2_index == (int)j) {
+						curr_total_dist += umps[j].TotalDistanceWithExchange(umps[u1_index], time_slot);
+						curr_solution[j] = umps[u2_index].GetPathWithExchange(umps[u1_index], time_slot);
+					
+					} else {
+						curr_total_dist += umps[j].TotalDistance();
+						curr_solution[j] = umps[j].GetPath();
+					}
+
+				}
+				std::cout << "( 4 )  curr_total_dist=" << curr_total_dist << ", global_best_total_dist="<< global_best_total_dist << "\n" << std::flush;
+
+				if (curr_total_dist < global_best_total_dist) {
+					global_best_total_dist = curr_total_dist;
+					std::copy(curr_solution, curr_solution + n_umps, best_solution);
+
+					umps[u1_index].SwapMatch(umps[u2_index], time_slot);
+
+					std::cout << "( 5 )  swapping because curr < best" << std::flush;
+
+				} else {
+					
+					if (uni_dbl_dist(gen) < std::exp((global_best_total_dist - curr_total_dist) / temp)) {
+
+						umps[u1_index].SwapMatch(umps[u2_index], time_slot);
+				std::cout << "( 6 )  chances" << "\n" << std::flush;
+
+					}
+
+				}
+			}
+
+			temp *= ALPHA;
+		}
+	}
+
+
+	std::cout << "\n\n-----------------------------------\n-- Showing simualted annealing: --\n\n" << std::flush;
+	for (std::size_t i = 0; i < n_umps; i++) {
+		std::cout << umps[i].ToString() << "\n" << std::flush;
+	}
+	std::cout << "----------------------------------\n\n" << std::flush;
 
 	for (std::size_t i = 0; i < n_umps; i++)
 		umps[i].Delete();

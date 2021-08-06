@@ -5,7 +5,8 @@
 #include <algorithm>
 #include <limits>
 
-constexpr int penalty = 1000000;
+#define PERFECT_MATCHING_ITER_LIMIT 1000000000
+#define PENALTY 1000000
 
 void SolveBipartiteGraph(int *costs, int *fbo, int *sbo, const std::size_t n_umps) {
 	int best_cost = 0;
@@ -30,6 +31,8 @@ void SolveBipartiteGraph(int *costs, int *fbo, int *sbo, const std::size_t n_ump
 	}
 
     std::next_permutation(edges, edges + n_umps);
+
+	int curr_iter = 0;
 
 	// While permutations still exists, loop to find the best two minimal costs
 	do {
@@ -61,7 +64,7 @@ void SolveBipartiteGraph(int *costs, int *fbo, int *sbo, const std::size_t n_ump
 			second_best_cost = curr_cost;
 			sbc_was_set = true;
 		} 
-	} while (std::next_permutation(edges, edges + n_umps));
+	} while (std::next_permutation(edges, edges + n_umps) && curr_iter++ < PERFECT_MATCHING_ITER_LIMIT);
 }
 
 void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
@@ -110,7 +113,8 @@ void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
 	Match::GetMatches(curr_matches, config->oppn[0], n_teams);
 
 	for (std::size_t i = 0; i < n_umps; i++) {
-		umps[i].AddToPath(curr_matches[i]);
+		if (umps[i].length() == 0)
+			umps[i].AddToPath(curr_matches[i]);
 
 		prev_sbo[i] = i;
 	}
@@ -141,7 +145,7 @@ void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
 					n_home_violation = curr_ump->HomeVisitViolations(curr_match->home, config->q1);
 					n_team_violation = curr_ump->TeamVisitViolations(config->q2);
 
-					assignment_costs[ump_index][match_index] = n_distance + penalty * (n_visits + n_home_violation + n_team_violation);
+					assignment_costs[ump_index][match_index] = n_distance + PENALTY * (n_visits + n_home_violation + n_team_violation);
 					has_violations[ump_index][match_index] = n_home_violation + n_team_violation > 0;
 				}
 			}
@@ -211,48 +215,17 @@ void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
 
 		// Now that backtracking and costs have been settled, 
 		// add new matches as the path for each umpire
-		for (std::size_t i = 0; i < n_umps; i++) {
+		for (std::size_t i = 0; i < n_umps; i++)
 			umps[i].AddToPath(curr_matches[first_best_option[i]]);
-		}
 		
 		std::copy(second_best_option, second_best_option + n_umps, prev_sbo);
 		skip_calculations = false;
 		time_slot++;
 	}
-}
-
-void LocalSearch(Configuration *config) {
 	
-}
-
-void SimulatedAnnealing(Configuration *config) {
-	/**
-	while time limit and iteration limit not exceeded; do
-
-		S = initial solution with prob. p or incumbent solution with prob. (1 − p)
-		t = t0
-
-	    while t > TEMP_LIMIT do
-			for all ITER iterations do
-				Pick one feasible exchange E at random
-				d = impact of E in objective function
-
-				if d < 0; then
-					Execute E
-					if new solution better than incumbent; then
-						Update incumbent
-					end if
-
-				else
-					x = random number in [0, 1]
-					if x < exp(−d/t); then
-						Execute E
-					end if
-				end if
-			end for			
-
-			t = t ∗ ALPHA
-
-		end while
-	end while */
+	std::cout << "\n-----------------------------\n-- Showing greedy results: --\n\n" << std::flush;
+	for (std::size_t i = 0; i < n_umps; i++) {
+		std::cout << umps[i].ToString() << "\n" << std::flush;
+	}
+	std::cout << "-----------------------------\n\n" << std::flush;
 }

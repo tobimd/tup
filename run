@@ -1,0 +1,12 @@
+#!/usr/bin/zsh
+
+clear
+
+local -a _options
+_options=(4 6 8 10 12 14 16 18 20 30)
+
+if [[ "${_options[(r)$1]}" == "$1" ]]; then
+    make "run-$1"
+else
+    echo "Please provide a correct command, use \"test <N>\", where <N> is either the number 4, 6, 8, 10, 12, 14, 16, 18, 20 or 30"
+fi
