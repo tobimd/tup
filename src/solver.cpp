@@ -12,7 +12,7 @@ void SolveBipartiteGraph(int *costs, int *fbo, int *sbo, const std::size_t n_ump
 	int best_cost = 0;
 	int curr_cost = 0;
 
-	int second_best_cost = 999999999;
+	int second_best_cost = 2147483647;
 	bool sbc_was_set = false;
 
 	// Indices of vector correspond to each umpire's id, and contains the index
@@ -143,7 +143,7 @@ void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
 					n_visits = curr_ump->CountVisitsOf(curr_match->home);
 
 					n_home_violation = curr_ump->HomeVisitViolations(curr_match->home, config->q1);
-					n_team_violation = curr_ump->TeamVisitViolations(config->q2);
+					n_team_violation = curr_ump->TeamVisitViolations(curr_match->home, config->q2);
 
 					assignment_costs[ump_index][match_index] = n_distance + PENALTY * (n_visits + n_home_violation + n_team_violation);
 					has_violations[ump_index][match_index] = n_home_violation + n_team_violation > 0;
@@ -222,10 +222,4 @@ void GreedyMatchingHeuristic(Configuration *config, Umpire *umps) {
 		skip_calculations = false;
 		time_slot++;
 	}
-	
-	std::cout << "\n-----------------------------\n-- Showing greedy results: --\n\n" << std::flush;
-	for (std::size_t i = 0; i < n_umps; i++) {
-		std::cout << umps[i].ToString() << "\n" << std::flush;
-	}
-	std::cout << "-----------------------------\n\n" << std::flush;
 }

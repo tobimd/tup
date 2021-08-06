@@ -191,19 +191,21 @@ public:
 	int DistanceTo(const int home_venue);
 	int CountVisitsOf(const int home_venue);
 	int HomeVisitViolations(const int home_venue, const int q1);
-	int TeamVisitViolations(const int q2);
+	int TeamVisitViolations(const int home_venue, const int q2);
 	int TotalDistance();
 	int TotalDistanceWithExchange(Umpire &other, const int time_slot);
 	void SwapMatch(Umpire &other, const std::size_t time_slot);
 
-	static bool SwappingHasViolations(Umpire *ump1, Umpire *ump2, const std::size_t time_slot, const int n_teams, const int q1, const int q2) {
+	static bool SwappingHasViolations(Umpire *ump1, Umpire *ump2, const std::size_t time_slot, const int n_teams, int q1, int q2) {
 		int length = ump1->n_length_;
+		q1 = clamp(q1, 1, 2 * n_teams - 2);
+		q2 = clamp(q2, 1, 2 * n_teams - 2);
 
 		int q1_check_start = clamp(time_slot + 1 - q1, 0, length);
 		int q2_check_start = clamp(time_slot + 1 - q2, 0, length);
 
-		int q1_check_end = clamp(time_slot - 1 + q1, 0, length);
-		int q2_check_end = clamp(time_slot - 1 + q2, 0, length);
+		int q1_check_end = clamp(time_slot - 1 + q1, 0, length - q1 + 1);
+		int q2_check_end = clamp(time_slot - 1 + q2, 0, length - q2 + 1);
 
 		int home_visits1[n_teams];
 		int team_visits1[n_teams];
@@ -242,15 +244,11 @@ public:
 				home_visits2[k] = 0;
 			}
 
-			std::cout << "        (2.2.2)   q1 check\n"  << std::flush;
 		}
 
 		// Check for team visit violations
 		for (int i = q2_check_start; i < q2_check_end; i++) {
 			for (int j = 0; j < q2; j++) {
-
-				std::cout << "        (2.2.2.5) ump2->p_path[" << i << "+" << j << "] = " << ump2->p_path[i+j].ToString() << "\n" << std::flush;
-
 				// Use swapped matches
 				if (i + j == (int)time_slot) {
 					team_visits1[ump2->p_path[i+j].home - 1]++;
@@ -274,7 +272,6 @@ public:
 				team_visits1[k] = 0;				
 				team_visits2[k] = 0;				
 			}
-			std::cout << "        (2.2.3)   q2 check\n"  << std::flush;
 
 		}
 
@@ -300,9 +297,6 @@ public:
 		std::size_t i = 0;
 		std::size_t j = 0;
 
-		std::cout << "    ( 2.1 )   inside PickExchange\n" << std::flush;
-
-
 		for (std::size_t slot = 0; slot < n_slots; slot++) {
 			
 			i = 0;
@@ -311,7 +305,6 @@ public:
 				
 				all_perms[slot][perm] = {i, j, slot};
 
-				std::cout << "    ( 2.2 )   before checking if swapping has violations\n" << std::flush;
 				if (!Umpire::SwappingHasViolations(
 						&umps[i], &umps[j],	slot,
 						n_ump_size * 2, q1, q2)) {
@@ -338,7 +331,6 @@ public:
 		std::uniform_int_distribution<> uni_int_dist;
 
 		if (feasible_perms.empty()) {
-			std::cout << "    ( 2.3 )   feasible perms where empty\n" << std::flush;
 			uni_int_dist = std::uniform_int_distribution<int>(0, n_perms - 1);
 			int slot_index = clamp(uni_int_dist(gen), 0, n_slots);
 
@@ -346,13 +338,11 @@ public:
 
 		} else {
 			if (use_random && feasible_perms.size() > 1) {
-				std::cout << "    ( 2.4 )   using random\n" << std::flush;
 				uni_int_dist = std::uniform_int_distribution<int>(0, feasible_perms.size() -1);
 
 				return feasible_perms[uni_int_dist(gen)];
 
 			} else {
-				std::cout << "    ( 2.5 )   other\n" << std::flush;
 				// Index of the first umpire selected
 				int u1x = std::get<0>(feasible_perms[0]);
 

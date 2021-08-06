@@ -16,9 +16,9 @@ DEPENDENCIES \
 
 Q1       := 2
 Q2       := 3
-K        := 5
+K        := 100
 
-all: build $(APP_DIR)/$(TARGET)
+all: clean build $(APP_DIR)/$(TARGET)
 
 $(OBJ_DIR)/%.o: src/%.cpp
 	@mkdir -p $(@D)

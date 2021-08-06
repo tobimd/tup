@@ -85,31 +85,27 @@ int Umpire::CountVisitsOf(const int home_venue) {
 
 int Umpire::HomeVisitViolations(const int home_venue, const int q1) {
 	int count = 0;
-	int start = n_length_ - 1;
+	int start = n_length_ + 1 - (q1 > 0 ? q1 : 1);
 
-	for (int i = start; i > start - q1 && i >= 0; i--)
+	for (int i = start; i < n_length_; i++)
 		if (p_path[i].home == home_venue) count++;
 
 	return count;
 }
 
-int Umpire::TeamVisitViolations(const int q2) {
-	int count = 0;
+int Umpire::TeamVisitViolations(const int home_venue, const int q2) {
 	int team_visits[n_teams_];
-	int start = n_length_ - 1;
+	int start = n_length_ + 1 - (q2 > 0 ? q2 : 1);
 
 	for (int i = 0; i < n_teams_; i++)
 		team_visits[i] = 0;
 
-	for (int i = start; i > start - q2 && i >= 0; i--){ 
+	for (int i = start; i < n_length_; i++){ 
 		team_visits[p_path[i].home - 1]++;
 		team_visits[p_path[i].visit - 1]++;
 	}
 
-	for (int i = 0; i < n_teams_; i++)
-		if (team_visits[i] > 1) count++;
-
-	return count;
+	return team_visits[home_venue];
 }
 
 int Umpire::TotalDistance() {
@@ -150,13 +146,13 @@ std::size_t Umpire::length() {
 }
 
 std::string Umpire::ToString() {
-	std::string output = "[+] ump " + std::to_string(id) + ": ";
+	std::string output = "Umpire " + std::to_string(id) + ": ";
 
 	if (n_length_ > 0) {
 		output += std::to_string(p_path[0].home);
 		
 		for (int i = 1; i < n_length_; i++)
-			output += "->" + std::to_string(p_path[i].home);
+			output += "-" + std::to_string(p_path[i].home);
 	}
 	return output;
 }

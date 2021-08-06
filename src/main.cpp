@@ -16,6 +16,7 @@
 #include <regex>
 #include <cmath>
 #include <climits>
+#include <chrono>
 
 #define TEMP_LIMIT 500.0
 #define INITAL_TEMP 2000.0
@@ -145,6 +146,8 @@ int main(int argc, char* argv[]) {
 	 * 		3. Solve
 	 * 		4. Generate output
 	 */
+
+	auto time_start = std::chrono::high_resolution_clock::now();
 	
 	// Configuration object holding problem parameters
 	Configuration config = Configuration(
@@ -203,7 +206,6 @@ int main(int argc, char* argv[]) {
 				umps[i].SetMatches(&best_solution[i]);
 		}
 
-		std::cout << "( 1 )  after setting up umps\n" << std::flush;
 
 		while(temp > TEMP_LIMIT) {
 			using_random = temp > 0.5 * TEMP_LIMIT;
@@ -215,10 +217,8 @@ int main(int argc, char* argv[]) {
 				for (std::size_t j = 0; j < n_umps; j++)
 					local_best_total_dist += umps[j].TotalDistance();
 
-				std::cout << "( 2 )  after local_best_total_dist=" << local_best_total_dist << "\n" << std::flush;
 
 				auto [ u1_index, u2_index, time_slot ] = Umpire::PickExchange(&umps[0], n_umps, using_random, config.q1, config.q2);
-				std::cout << "( 3 )  after PickExchange\n" << std::flush;
 				
 				// Get difference and compare
 				curr_total_dist = 0;
@@ -238,7 +238,6 @@ int main(int argc, char* argv[]) {
 					}
 
 				}
-				std::cout << "( 4 )  curr_total_dist=" << curr_total_dist << ", global_best_total_dist="<< global_best_total_dist << "\n" << std::flush;
 
 				if (curr_total_dist < global_best_total_dist) {
 					global_best_total_dist = curr_total_dist;
@@ -246,14 +245,12 @@ int main(int argc, char* argv[]) {
 
 					umps[u1_index].SwapMatch(umps[u2_index], time_slot);
 
-					std::cout << "( 5 )  swapping because curr < best" << std::flush;
 
 				} else {
 					
 					if (uni_dbl_dist(gen) < std::exp((global_best_total_dist - curr_total_dist) / temp)) {
 
 						umps[u1_index].SwapMatch(umps[u2_index], time_slot);
-				std::cout << "( 6 )  chances" << "\n" << std::flush;
 
 					}
 
@@ -262,14 +259,26 @@ int main(int argc, char* argv[]) {
 
 			temp *= ALPHA;
 		}
+
+		if (curr_iter % (config.max_iter / 5) == 0)
+			std::cout << "iteration " << config.max_iter - curr_iter << "/" << config.max_iter << "\n" << std::flush;
 	}
 
 
-	std::cout << "\n\n-----------------------------------\n-- Showing simualted annealing: --\n\n" << std::flush;
+	int total_cost = 0;
+	std::string ump_sol = "";
+	auto time_end = std::chrono::high_resolution_clock::now();
+	double elapsed_seconds = std::chrono::duration<double, std::milli>(time_end - time_start).count() / 1000.0;
+
+
 	for (std::size_t i = 0; i < n_umps; i++) {
-		std::cout << umps[i].ToString() << "\n" << std::flush;
+		total_cost += umps[i].TotalDistance();
+		ump_sol += umps[i].ToString() + "\n";
 	}
-	std::cout << "----------------------------------\n\n" << std::flush;
+
+	std::cout << "\nCosto/Distancia total de viaje: " << total_cost << "\n" << std::flush;
+	std::cout << ump_sol << std::flush;
+	std::cout << "Tiempo total de ejecución: " << elapsed_seconds << " [s]\n" << std::flush;
 
 	for (std::size_t i = 0; i < n_umps; i++)
 		umps[i].Delete();
